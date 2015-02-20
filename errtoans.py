@@ -10,18 +10,36 @@ import sys
 def withSort(so):
 	qs = so.search(sort=stackexchange.Sort.Votes, order=stackexchange.DESC)
 
-def get_from_stackoverflow(title):
+def get_code(data):
+	""" Return code from question """
+	soup = BeautifulSoup(data)
+	if soup.code != None:
+		print(soup.code)
+
+
+def get_answers(data):
+	for answer in data:
+		get_code(answer.body)
+
+def get_from_stackoverflow(title,limit=10, byscore=True):
+	'''
+		limit can be less than 10
+		byscore - sorted questions by votes
+	'''
+	sortscore = stackexchange.Sort.Votes
+	if byscore == False:
+		sortscore = None
 	so = stackexchange.Site(stackexchange.StackOverflow, app_key=None)
 	so.be_inclusive()
-	qs = so.search(intitle=title)
+	qs = so.search(intitle=title, sort=sortscore)
 	for q in qs:
 		question = so.question(q.id)
+		print(question.url)
 		print(q.title)
-		print(so.answers(q.id))
-		soup = BeautifulSoup(question.body)
-		'''if soup.code != None:
-			print(soup.p.index("arrays"))'''
-
+		print("Answers.")
+		get_answers(question.answers)
+		#get_code_from_q(question.body)
+		break
 def main(targetfile):
 	command = 'python {0}'.format(targetfile)
 	process = subprocess.Popen(command.split(), stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
