@@ -10,16 +10,15 @@ import sys
 def withSort(so):
 	qs = so.search(sort=stackexchange.Sort.Votes, order=stackexchange.DESC)
 
-def get_code(data):
-	""" Return code from question """
+def parse_answer(data):
 	soup = BeautifulSoup(data)
 	if soup.code != None:
-		print(soup.code)
+		print(soup.get_text())
 
 
 def get_answers(data):
 	for answer in data:
-		get_code(answer.body)
+		parse_answer(answer.body)
 
 def get_from_stackoverflow(title,limit=10, byscore=True):
 	'''
@@ -36,18 +35,21 @@ def get_from_stackoverflow(title,limit=10, byscore=True):
 		question = so.question(q.id)
 		print(question.url)
 		print(q.title)
-		print("Answers.")
+		print("\n")
+		print("Answer: ")
 		get_answers(question.answers)
 		#get_code_from_q(question.body)
-		break
 def main(targetfile):
 	command = 'python {0}'.format(targetfile)
 	process = subprocess.Popen(command.split(), stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
 	process.wait()
 	output = process.communicate()
 	result = str(output[1]).split("\\n")
-	value = result[-2]
-	get_from_stackoverflow(value)
+	if len(result) > 1:
+		value = result[-2]
+		get_from_stackoverflow(value)
+		return
+	print("file {0} not contain errors".format(targetfile))
 
 
 if __name__ == '__main__':
