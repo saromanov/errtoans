@@ -13,6 +13,7 @@ def withSort(so):
 	qs = so.search(sort=stackexchange.Sort.Votes, order=stackexchange.DESC)
 
 def parse_answer(data, outfile=None):
+	""" Return the 'clean' answer """
 	soup = BeautifulSoup(data)
 	if soup.code != None:
 		result = soup.get_text()
@@ -42,7 +43,7 @@ def show_info(msg, outfile=None):
 		write_file(outfile, msg)
 	print(msg)
 
-def get_from_stackoverflow(title,limit=10, byscore=True, outfile=None):
+def get_from_stackoverflow(title,limit=10, byscore=True, outfile=None, api=None):
 	'''
 		limit can be less than 10
 		byscore - sorted questions by votes
@@ -50,7 +51,7 @@ def get_from_stackoverflow(title,limit=10, byscore=True, outfile=None):
 	sortscore = stackexchange.Sort.Votes
 	if byscore == False:
 		sortscore = None
-	so = stackexchange.Site(stackexchange.StackOverflow, app_key=None)
+	so = stackexchange.Site(stackexchange.StackOverflow, app_key=api)
 	so.be_inclusive()
 	qs = so.search(intitle=title, sort=sortscore)
 	for q in qs:
@@ -88,6 +89,7 @@ if __name__ == '__main__':
 	parser.add_argument('--answers', help='show full answers', action='store_true')
 	parser.add_argument('--num_answers', help='Show first n answers', type=int, default=10)
 	parser.add_argument('--outfile', help='Store results to file')
+	parser.add_argument('--api', help='Set key to api from StackExchange')
 	args = parser.parse_args()
-	main(sys.argv[1], answers=args.answers, num_answers=args.num_answers, outfile=args.outfile)
+	main(sys.argv[1], answers=args.answers, num_answers=args.num_answers, outfile=args.outfile, api=args.api)
 
