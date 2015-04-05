@@ -5,6 +5,7 @@ import subprocess
 import sys
 import argparse
 import os.path
+from termcolor import colored
 
 #https://github.com/lucjon/Py-StackExchange/tree/master/demo
 #http://www.crummy.com/software/BeautifulSoup/bs4/doc/
@@ -31,17 +32,17 @@ def prepare_file(path):
 		open(path, 'w').close()
 
 def write_file(path, data):
-	""" Store result to file """
+	""" Store result to log file """
 	with open(path, 'a') as f:
 		f.write(data)
 
-def show_info(msg, outfile=None):
+def show_info(msg, color, outfile=None):
 	""" Print message, if outpath not None, write this message here( and print it)
 		Note: Probably better store it to class 
 	"""
 	if outfile != None:
 		write_file(outfile, msg)
-	print(msg)
+	print(colored(msg, color))
 
 def get_from_stackoverflow(title,limit=10, byscore=True, outfile=None, api=None):
 	'''
@@ -51,15 +52,15 @@ def get_from_stackoverflow(title,limit=10, byscore=True, outfile=None, api=None)
 	sortscore = stackexchange.Sort.Votes
 	if byscore == False:
 		sortscore = None
-	so = stackexchange.Site(stackexchange.StackOverflow, app_key=api)
+	so = stackexchange.Site(stackexchange.StackOverflow, app_key=api, impose_throttling=True)
 	so.be_inclusive()
 	qs = so.search(intitle=title, sort=sortscore)
 	for q in qs:
 		question = so.question(q.id)
-		show_info(question.url, outfile=outfile)
-		show_info(q.title, outfile=outfile)
-		show_info("\n", outfile=outfile)
-		show_info("Answer: ", outfile=outfile)
+		show_info(question.url, 'green', outfile=outfile)
+		show_info(q.title, 'blue', outfile=outfile)
+		show_info("\n", 'white', outfile=outfile)
+		show_info("Answer: ", 'white', outfile=outfile)
 		get_answers(question.answers, outfile=outfile)
 		#get_code_from_q(question.body)
 
@@ -92,4 +93,3 @@ if __name__ == '__main__':
 	parser.add_argument('--api', help='Set key to api from StackExchange')
 	args = parser.parse_args()
 	main(sys.argv[1], answers=args.answers, num_answers=args.num_answers, outfile=args.outfile, api=args.api)
-
