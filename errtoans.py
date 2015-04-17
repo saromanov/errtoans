@@ -37,11 +37,17 @@ def write_file(path, data):
 	with open(path, 'a') as f:
 		f.write(data)
 
-def get_from_stackoverflow(title,limit=10, byscore=True, outfile=None, api=None):
+def get_from_stackoverflow(title,*args, **kwargs):
 	'''
 		limit can be less than 10
 		byscore - sorted questions by votes
 	'''
+	limit = kwargs.get('limit',10)
+	byscore = kwargs.get('byscore', True)
+	outfile = kwargs.get('outfile', None)
+	api = kwargs.get('api', None)
+	outlinks = kwargs.get('links', False)
+	urls=[]
 	sortscore = stackexchange.Sort.Votes
 	if byscore == False:
 		sortscore = None
@@ -58,13 +64,20 @@ def get_from_stackoverflow(title,limit=10, byscore=True, outfile=None, api=None)
 
 	for q in qs:
 		question = so.question(q.id)
-		show_info(question.url, 'green')
+		url = question.url
+		if outlinks: urls.append(url)
+		show_info(url, 'green')
 		show_info(q.title, 'red')
 		show_info("\n", 'white')
 		show_info('Question: ', 'white')
 		show_info(question.body, 'white')
 		show_info("\n", 'white')
 		get_answers(question.answers)
+
+	#Optional, output links
+	if outlinks:
+		print("Links: ")
+		for link in urls: print(link)
 
 def prepare_error_msg(msg):
 	print(msg)
@@ -86,7 +99,8 @@ def main(targetfile, *args, **kwargs):
 			prepare_error_msg(full_trace)
 		else:
 			print("Your error: ", value)
-		get_from_stackoverflow(value, limit=kwargs.get('num_answers',10), outfile=path)
+		get_from_stackoverflow(value, limit=kwargs.get('num_answers',10), outfile=path, links=kwargs.get('links'),
+			api=kwargs.get('api'))
 		return
 	print("file {0} not contain errors".format(targetfile))
 
@@ -102,6 +116,7 @@ if __name__ == '__main__':
 	parser.add_argument('--outfile', help='Store results to file')
 	parser.add_argument('--api', help='Set key to api from StackExchange')
 	parser.add_argument('--show-full-trace', help='Show full stack trace with errors', action='store_false')
+	parser.add_argument('--links', help='Output links to questions at the end', default=False)
 	args = parser.parse_args()
 	main(sys.argv[1], answers=args.answers, num_answers=args.num_answers, outfile=args.outfile, api=args.api, \
-		trace=args.show_full_trace)
+		trace=args.show_full_trace, links=args.links)
